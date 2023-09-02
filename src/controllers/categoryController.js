@@ -62,6 +62,7 @@ exports.list = async (req, res) => {
 		res.json(error.message);
 	}
 };
+
 exports.read = async (req, res) => {
 	try {
 		const categorySlug = req.params.slug;

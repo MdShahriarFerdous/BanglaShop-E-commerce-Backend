@@ -38,7 +38,7 @@ exports.create = async (req, res) => {
 		await newProduct.save();
 		res.json(newProduct);
 	} catch (error) {
-		res.json(error.message);
+		return res.json(error.message);
 	}
 };
 

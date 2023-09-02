@@ -4,10 +4,25 @@ require("dotenv").config();
 
 exports.requireSignIn = async (req, res, next) => {
 	try {
+		/* from frontend it will be like 
+		{
+			headers:{
+				authorization: localStorage.getItem("auth/authorization/token")
+			}
+			}
+*/
 		const token = req.headers.authorization;
-		const decode = jwt.verify(token, process.env.SECRET_KEY);
-		req.headers.auth = decode;
-		console.log(req.headers.auth);
+		if (!token) {
+			return res
+				.status(401)
+				.json({ error: "Unauthorized: No token provided" });
+		}
+		const decoded = jwt.verify(token, process.env.SECRET_KEY);
+		req.user = decoded;
+
+		// console.log(req.headers.auth);
+		// console.log(req.user);
+
 		next();
 	} catch (error) {
 		return res
@@ -18,9 +33,7 @@ exports.requireSignIn = async (req, res, next) => {
 
 exports.isAdmin = async (req, res, next) => {
 	try {
-		const decodedUser = req.headers.auth;
-
-		const user = await User.findById(decodedUser._id);
+		const user = await User.findById(req.user._id);
 
 		if (user.role !== 1) {
 			return res.status(401).send("Unauthorized");
@@ -31,4 +44,3 @@ exports.isAdmin = async (req, res, next) => {
 		res.json(error.message);
 	}
 };
- 

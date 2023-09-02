@@ -9,7 +9,7 @@ exports.register = async (req, res) => {
 		// 1. destructure name, email, password from req.body
 		const { name, email, password, address, role } = req.body;
 		// 2. name, email, password fields require validation
-		if (!name.trim()) {
+		if (!name) {
 			return res.json({ error: "Name is required!" });
 		}
 		if (!email) {
@@ -35,7 +35,6 @@ exports.register = async (req, res) => {
 			email,
 			password: hashedPassword,
 			address,
-			role,
 		}).save();
 
 		const token = jwt.sign({ _id: newUser._id }, process.env.SECRET_KEY, {
@@ -43,7 +42,12 @@ exports.register = async (req, res) => {
 		});
 
 		res.json({
-			status: "Register Success and Token Generated",
+			user: {
+				name: newUser.name,
+				email: newUser.email,
+				role: newUser.role,
+				address: newUser.address,
+			},
 			token,
 		});
 	} catch (error) {
@@ -67,16 +71,20 @@ exports.login = async (req, res) => {
 			res.json({ error: "User not found!" });
 		}
 
-		const matchPassword = comparePassword(password, user.password);
+		const matchPassword = await comparePassword(password, user.password);
 		if (!matchPassword) {
-			res.json({ error: "Invalid email or password" });
+			res.json({ error: "Invalid password" });
 		}
-
 		const token = jwt.sign({ _id: user._id }, process.env.SECRET_KEY, {
 			expiresIn: "1h",
 		});
 		res.json({
-			status: "valid user",
+			user: {
+				name: user.name,
+				email: user.email,
+				role: user.role,
+				address: user.address,
+			},
 			token,
 		});
 	} catch (error) {
@@ -87,9 +95,7 @@ exports.login = async (req, res) => {
 exports.updateProfile = async (req, res) => {
 	try {
 		const { name, password, address } = req.body;
-
-		const decodedUser = req.headers.auth;
-		const user = User.findById(decodedUser._id);
+		const user = User.findById(req.user._id);
 
 		if (password && password.length < 6) {
 			return res.json({
@@ -101,7 +107,7 @@ exports.updateProfile = async (req, res) => {
 			: undefined;
 
 		const updated = await User.findByIdAndUpdate(
-			decodedUser._id,
+			req.user._id,
 			{
 				name: name || user.name,
 				password: hashedPassword || user.password,
@@ -118,8 +124,7 @@ exports.updateProfile = async (req, res) => {
 
 exports.showOrders = async (req, res) => {
 	try {
-		const user = req.headers.auth;
-		const orders = await Order.find({ buyer: user._id })
+		const orders = await Order.find({ buyer: req.user._id })
 			.populate("products", "-photo")
 			.populate("buyer", "name");
 		res.json(orders);

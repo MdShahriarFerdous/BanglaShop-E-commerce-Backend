@@ -25,7 +25,7 @@ const productSchema = new mongoose.Schema(
 		},
 		category: {
 			type: ObjectId,
-			ref: "Category", //Category model
+			ref: "Category", //Category model's collection name
 			required: true,
 		},
 		quantity: {
