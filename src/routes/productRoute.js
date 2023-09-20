@@ -16,7 +16,7 @@ const {
 	relatedProducts,
 } = require("../controllers/productController");
 
-router.post("/product", requireSignIn, isAdmin, formidable(), create);
+router.post("/create-product", requireSignIn, isAdmin, formidable(), create);
 router.get("/products", list);
 router.get("/product/:slug", read);
 router.get("/product/photo/:productId", photo);

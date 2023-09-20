@@ -13,17 +13,17 @@ exports.create = async (req, res) => {
 				return res.json({ error: "Name is required" });
 			case !description.trim():
 				return res.json({ error: "Description is required" });
-			case !price.trim():
+			case !price:
 				return res.json({ error: "Price is required" });
 			case !category.trim():
 				return res.json({ error: "Category is required" });
-			case !quantity.trim():
+			case !quantity:
 				return res.json({ error: "Quantity is required" });
 			case !shipping.trim():
 				return res.json({ error: "Shipping is required" });
-			case photo && photo.size > 1000000:
+			case photo && photo.size > 5000000:
 				return res.json({
-					error: "Image should be less than 1mb in size",
+					error: "Image should be less than 5mb in size",
 				});
 		}
 		const newProduct = new Product({
